@@ -3,9 +3,11 @@
 # Base image to extend from
 
 ARG BASE_TOMCAT_IMAGE
-FROM pegasystems/$BASE_TOMCAT_IMAGE as release
+FROM registry.redhat.io/jboss-webserver-5/jws57-openjdk17-openshift-rhel8 as release
 
 ARG VERSION
+
+USER root 
 
 LABEL vendor="Pegasystems Inc." \
       name="Pega Tomcat Node" \
@@ -16,11 +18,15 @@ LABEL vendor="Pegasystems Inc." \
 RUN groupadd -g 9001 pegauser && \
     useradd -r -u 9001 -g pegauser pegauser
 
-
+ENV CATALINA_HOME=/opt/jws-5.7/tomcat
+env PEGA_DEPLOYMENT_DIR=$CATALINA_HOME/webapps
 ENV PEGA_DOCKER_VERSION=${VERSION:-CUSTOM_BUILD}
 
 COPY hashes/ /hashes/
 COPY keys/ /keys/
+
+#copy detemplatize
+COPY detemplatize /bin
 
 # Create directory for storing heapdump
 RUN mkdir -p /heapdumps  && \
@@ -189,22 +195,6 @@ RUN  mkdir -p /opt/pega/kafkadata && \
      chmod -R g+rw /opt/pega/kafkadata && \
      chown -R pegauser /opt/pega/kafkadata
 
-# Set up dir for prometheus lib
-RUN apt-get update && \
-    apt-get install -y gpg && \
-    rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /opt/pega/prometheus && \
-    curl -sL -o /opt/pega/prometheus/jmx_prometheus_javaagent.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.18.0/jmx_prometheus_javaagent-0.18.0.jar && \
-    curl -sL -o /tmp/jmx_prometheus_javaagent-0.18.0.jar.asc https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.18.0/jmx_prometheus_javaagent-0.18.0.jar.asc && \
-    gpg --import /keys/prometheus.asc && \
-    gpg --verify /tmp/jmx_prometheus_javaagent-0.18.0.jar.asc /opt/pega/prometheus/jmx_prometheus_javaagent.jar && \
-    rm /tmp/jmx_prometheus_javaagent-0.18.0.jar.asc && \
-    apt-get autoremove --purge -y gpg && \
-    chgrp -R 0 /opt/pega/prometheus && \
-    chmod -R g+rw /opt/pega/prometheus && \
-    chown -R pegauser /opt/pega/prometheus && \
-    chmod 440 /opt/pega/prometheus/jmx_prometheus_javaagent.jar
-
 # Setup dir for cert files
 RUN  mkdir -p /opt/pega/certs  && \
      chgrp -R 0 /opt/pega/certs && \
@@ -237,20 +227,22 @@ COPY tomcat-conf ${CATALINA_HOME}/conf/
 COPY scripts /scripts
 
 
+
 # Update access of required directories to allow not running in root for openshift
-RUN chmod -R g+rw ${CATALINA_HOME}/logs  && \
-    chmod -R g+rw ${CATALINA_HOME}/lib  && \
-    chmod -R g+rw ${CATALINA_HOME}/work  && \
-    chmod -R g+rw ${CATALINA_HOME}/conf  && \
-    chmod -R g+rw ${CATALINA_HOME}/bin  && \
-    chmod -R g+rw ${CATALINA_HOME}/webapps && \
-    chmod -R g+x /scripts && \
-    chown -R pegauser /scripts && \
-    chmod g+r ${CATALINA_HOME}/conf/web.xml && \
-    chown -R pegauser ${CATALINA_HOME}  && \
-    mkdir /search_index && \
-    chmod -R g+w /search_index && \
-    chown -R pegauser /search_index
+RUN chmod -fR g+rw ${CATALINA_HOME}/logs 
+RUN chmod -fR g+rw ${CATALINA_HOME}/lib  
+RUN mkdir ${CATALINA_HOME}/work 
+RUN chmod -fR g+rw ${CATALINA_HOME}/work  
+RUN chmod -fR g+rw ${CATALINA_HOME}/conf  
+RUN chmod -fR g+rw ${CATALINA_HOME}/bin  
+RUN chmod -fR g+rw ${CATALINA_HOME}/webapps 
+RUN chmod -fR g+x /scripts 
+RUN chown -R pegauser /scripts 
+RUN chmod g+r ${CATALINA_HOME}/conf/web.xml 
+RUN chown -R pegauser ${CATALINA_HOME} 
+RUN mkdir /search_index  
+RUN chmod -R g+w /search_index  
+RUN chown -R pegauser /search_index
 
 #switched the user to pegauser
 USER pegauser

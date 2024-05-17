@@ -36,5 +36,18 @@
   <Environment name="prconfig/database/databases/CustomerData/defaultSchema" value="{{ .Env.DATA_SCHEMA }}" type="java.lang.String" />
   {{ end }}
   <Environment name="prconfig/database/drivers" value="com.microsoft.sqlserver.jdbc.SQLServerDriver;oracle.jdbc.OracleDriver;org.postgresql.Driver;com.ibm.db2.jcc.DB2Driver" type="java.lang.String" />
+  <Environment name="prconfig/dnode/external_cassandra_cluster" value="true" type="java.lang.String"/>
+<Environment name="prconfig/dnode/external_cassandra_nodes" value="10.225.83.196" type="java.lang.String"/>
+<Environment name="prconfig/dnode/external_cassandra_port" value="9042" type="java.lang.String"/>
+<Environment name="prconfig/dnode/cassandra_username" value="cassandra" type="java.lang.String"/>
+<Environment name="prconfig/dnode/cassandra_password" value="cHpqEM7Oeb" type="java.lang.String"/>
+<Environment name="prconfig/dnode/cassandra_keyspaces_prefix" value="EISRHEL001" type="java.lang.String"/>
+<Environment name="prconfig/services/stream/validate" value="true" type="java.lang.String"/>
+<Environment name="prconfig/services/stream/provider" value="ExternalKafka" type="java.lang.String" />
+<Environment name="prconfig/services/stream/broker/url" value="10.225.83.195:9094" type="java.lang.String" />
+<Environment name="prconfig/services/stream/encryption/security/protocol" value="PLAINTEXT" type="java.lang.String" />
+<Environment name="prconfig/services/stream/encryption/sasl/mechanism" value="PLAIN" type="java.lang.String" />
+<Environment name="prconfig/services/stream/name/pattern" value="EISRHEL001-{stream.name}" type="java.lang.String" />
+<Environment name="prconfig/services/stream/external/replication/factor" value="1" type="java.lang.String" />
 </Context>   
 

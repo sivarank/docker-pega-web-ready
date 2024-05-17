@@ -390,7 +390,7 @@ fi
 
 rm "${CATALINA_HOME}"/conf/context.xml.tmpl
 rm "${CATALINA_HOME}"/conf/tomcat-users.xml.tmpl
-rm "${CATALINA_HOME}"/conf/server.xml.tmpl
+#rm "${CATALINA_HOME}"/conf/server.xml.tmpl
 
 
 for secret in "${secrets_list[@]}"
@@ -403,7 +403,7 @@ unset pega_root lib_root config_root
 
 # Run tomcat if the first argument is run otherwise try to run whatever the argument is a command
 if [ "$1" = 'run' ]; then
-  exec catalina.sh "$@"
+  exec "${CATALINA_HOME}"/bin/catalina.sh "$@"
 else
   exec "$@"
 fi
